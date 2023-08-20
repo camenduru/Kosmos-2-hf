@@ -159,7 +159,7 @@ def draw_entity_boxes_on_image(image, entities, show=False, save_path=None):
 
             # draw bbox
             # random color
-            color = used_colors[bbox_id]  # tuple(np.random.randint(0, 255, size=3).tolist())
+            color = used_colors[color_id]  # tuple(np.random.randint(0, 255, size=3).tolist())
             new_image = cv2.rectangle(new_image, (orig_x1, orig_y1), (orig_x2, orig_y2), color, box_line)
 
             l_o, r_o = box_line // 2 + box_line % 2, box_line // 2 + box_line % 2 + 1
