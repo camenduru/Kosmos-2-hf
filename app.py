@@ -91,7 +91,7 @@ colors = [
     (0, 64, 128),
 ]
 
-color_map = {f"color_id_{color_id}": "red" for color_id, color in enumerate(colors)}
+color_map = {f"{color_id}": "red" for color_id, color in enumerate(colors)}
 
 
 def is_overlapping(rect1, rect2):
@@ -270,7 +270,7 @@ def main():
         for idx, ((start, end), color_id) in enumerate(entity_info):
             if start > prev_start:
                 colored_text.append((processed_text[prev_start:start], None))
-            colored_text.append((processed_text[start:end], f"color_id_{color_id}"))
+            colored_text.append((processed_text[start:end], f"{color_id}"))
             prev_start = start
 
         if end < len(processed_text):
