@@ -119,7 +119,7 @@ def draw_entity_boxes_on_image(image, entities, show=False, save_path=None):
     if show:
         pil_image.show()
 
-    return new_image
+    return pil_image
 
 
 def main():
@@ -130,6 +130,13 @@ def main():
     processor = AutoProcessor.from_pretrained(ckpt, trust_remote_code=True)
 
     def generate_predictions(image_input, text_input, do_sample, sampling_topp, sampling_temperature):
+
+        if text_input == "Brief":
+            text_input = "<grounding>An image of"
+        elif text_input == "Detailed":
+            text_input = "<grounding>Describe this image in detail:"
+        else:
+            text_input = f"<grounding>{text_input}"
 
         inputs = processor(text=text_input, images=image_input, return_tensors="pt")
 
