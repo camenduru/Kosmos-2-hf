@@ -44,15 +44,15 @@ def main():
         with gr.Row():
             with gr.Column():
                 gr.Examples(examples=[
-                            ["demo/images/two_dogs.jpg", "Detailed", False],
-                            ["demo/images/snowman.png", "Brief", False],
-                            ["demo/images/man_ball.png", "Detailed", False],
+                            ["images/two_dogs.jpg", "Detailed", False],
+                            ["images/snowman.png", "Brief", False],
+                            ["images/man_ball.png", "Detailed", False],
                         ], inputs=[image_input, text_input, do_sample])
             with gr.Column():
                 gr.Examples(examples=[
-                            ["demo/images/six_planes.png", "Brief", False],
-                            ["demo/images/quadrocopter.jpg", "Brief", False],
-                            ["demo/images/carnaby_street.jpg", "Brief", False],
+                            ["images/six_planes.png", "Brief", False],
+                            ["images/quadrocopter.jpg", "Brief", False],
+                            ["images/carnaby_street.jpg", "Brief", False],
                         ], inputs=[image_input, text_input, do_sample])
         gr.Markdown(term_of_use)
 
