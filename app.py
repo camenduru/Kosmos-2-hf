@@ -61,7 +61,7 @@ def main():
                          outputs=[image_output, text_output1],
                          show_progress=True, queue=True)
 
-    demo.launch(share=True)
+    demo.launch()
 
 
 if __name__ == "__main__":
