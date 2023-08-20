@@ -2,7 +2,7 @@ import gradio as gr
 
 def main():
 
-    def generate_predictions(image_input, text_input, do_sample, sampling_topp, sampling_temperature)
+    def generate_predictions(image_input, text_input, do_sample, sampling_topp, sampling_temperature):
 
         return None, None
 
