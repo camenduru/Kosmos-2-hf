@@ -1,5 +1,5 @@
 import gradio as gr
-
+import random
 import numpy as np
 import os
 import requests
@@ -8,6 +8,90 @@ import torchvision.transforms as T
 from PIL import Image
 from transformers import AutoProcessor, AutoModelForVision2Seq
 import cv2
+
+colors = [
+    (255, 255, 0),
+    (255, 0, 255),
+    (0, 255, 255),
+
+    (255, 0, 0),
+    (0, 255, 0),
+    (0, 0, 255),
+
+    (255, 128, 0),
+    (255, 0, 128),
+    (0, 255, 128),
+
+    (128, 255, 0),
+    (128, 0, 255),
+    (0, 128, 255),
+
+    (255, 128, 128),
+    (128, 255, 128),
+    (128, 128, 255),
+
+    (128, 255, 255),
+    (255, 128, 255),
+    (255, 255, 128),
+
+    (255, 128, 64),
+    (255, 64, 128),
+    (64, 255, 128),
+
+    (128, 255, 64),
+    (128, 64, 255),
+    (64, 128, 255),
+
+    (255, 64, 64),
+    (64, 255, 64),
+    (64, 64, 255),
+
+    (64, 255, 255),
+    (255, 64, 255),
+    (255, 255, 64),
+
+    (128, 64, 64),
+    (64, 128, 64),
+    (64, 64, 128),
+
+    (64, 128, 128),
+    (128, 64, 128),
+    (128, 128, 64),
+
+    (128, 128, 0),
+    (128, 0, 128),
+    (0, 128, 128),
+
+    (128, 0, 0),
+    (0, 128, 0),
+    (0, 0, 128),
+
+    (64, 64, 0),
+    (64, 0, 64),
+    (0, 64, 64),
+
+    (64, 0, 0),
+    (0, 64, 0),
+    (0, 0, 64),
+
+    (255, 64, 0),
+    (255, 0, 64),
+    (0, 255, 64),
+
+    (64, 255, 0),
+    (64, 0, 255),
+    (0, 64, 255),
+
+    (128, 64, 0),
+    (128, 0, 64),
+    (0, 128, 64),
+
+    (64, 128, 0),
+    (128, 0, 255),
+    (0, 64, 128),
+]
+
+color_map = {f"color_id_{color_id}": "red" for color_id, color in enumerate(colors)}
 
 
 def is_overlapping(rect1, rect2):
@@ -62,12 +146,20 @@ def draw_entity_boxes_on_image(image, entities, show=False, save_path=None):
     text_offset_original = text_height - base_height
     text_spaces = 3
 
+    # num_bboxes = sum(len(x[-1]) for x in entities)
+    used_colors = colors  # random.sample(colors, k=num_bboxes)
+
+    color_id = -1
     for entity_name, (start, end), bboxes in entities:
-        for (x1_norm, y1_norm, x2_norm, y2_norm) in bboxes:
+        color_id += 1
+        for bbox_id, (x1_norm, y1_norm, x2_norm, y2_norm) in enumerate(bboxes):
+            if start is None and bbox_id > 0:
+                color_id += 1
             orig_x1, orig_y1, orig_x2, orig_y2 = int(x1_norm * image_w), int(y1_norm * image_h), int(x2_norm * image_w), int(y2_norm * image_h)
+
             # draw bbox
             # random color
-            color = tuple(np.random.randint(0, 255, size=3).tolist())
+            color = used_colors[bbox_id]  # tuple(np.random.randint(0, 255, size=3).tolist())
             new_image = cv2.rectangle(new_image, (orig_x1, orig_y1), (orig_x2, orig_y2), color, box_line)
 
             l_o, r_o = box_line // 2 + box_line % 2, box_line // 2 + box_line % 2 + 1
@@ -131,6 +223,12 @@ def main():
 
     def generate_predictions(image_input, text_input, do_sample, sampling_topp, sampling_temperature):
 
+        user_image_path = "/tmp/user_input_test_image.jpg"
+        # This will be of `.jpg` format
+        image_input.save(user_image_path)
+        # This might give different results from the original argument `image_input`
+        image_input = Image.open(user_image_path)
+
         if text_input == "Brief":
             text_input = "<grounding>An image of"
         elif text_input == "Detailed":
@@ -156,7 +254,29 @@ def main():
 
         annotated_image = draw_entity_boxes_on_image(image_input, entities, show=True)
 
-        return annotated_image, processed_text
+        color_id = -1
+        entity_info = []
+        for entity_name, (start, end), bboxes in entities:
+            color_id += 1
+            for bbox_id, _ in enumerate(bboxes):
+                if start is None and bbox_id > 0:
+                    color_id += 1
+            if start is not None:
+                entity_info.append(((start, end), color_id))
+
+        colored_text = []
+        prev_start = 0
+        end = 0
+        for idx, ((start, end), color_id) in enumerate(entity_info):
+            if start > prev_start:
+                colored_text.append((processed_text[prev_start:start], None))
+            colored_text.append((processed_text[start:end], f"color_id_{color_id}"))
+            prev_start = start
+
+        if end < len(processed_text):
+            colored_text.append((processed_text[end:len(processed_text)], None))
+
+        return annotated_image, colored_text
 
     term_of_use = """
     ### Terms of use  
@@ -191,7 +311,7 @@ def main():
                                     label="Generated Description",
                                     combine_adjacent=False,
                                     show_legend=True,
-                                ).style(color_map={"box": "red"})
+                                ).style(color_map=color_map)
 
         with gr.Row():
             with gr.Column():
