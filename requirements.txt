@@ -1,4 +1,4 @@
 torch
 torchvision
-transformers
+transformers@git+https://github.com/huggingface/transformers.git@main
 opencv-python
