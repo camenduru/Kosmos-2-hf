@@ -10,36 +10,29 @@ from transformers import AutoProcessor, AutoModelForVision2Seq
 import cv2
 
 colors = [
-    (255, 255, 0),
-    (255, 0, 255),
-    (0, 255, 255),
-
     (255, 0, 0),
     (0, 255, 0),
     (0, 0, 255),
 
-    (255, 128, 0),
-    (255, 0, 128),
-    (0, 255, 128),
-
-    (128, 255, 0),
-    (128, 0, 255),
-    (0, 128, 255),
-
-    (255, 128, 128),
-    (128, 255, 128),
-    (128, 128, 255),
-
-    (128, 255, 255),
-    (255, 128, 255),
-    (255, 255, 128),
-
-    (255, 128, 64),
-    (255, 64, 128),
-    (64, 255, 128),
+    (255, 255, 0),
+    (255, 0, 255),
+    (0, 255, 255),
+    
+    (114, 128, 250),
+    (0, 165, 255),
+    (0, 128, 0),
+    (144, 238, 144),
+    (238, 238, 175),
+    (255, 191, 0),
+    (0, 128, 0),
+    (226, 43, 138),
+    (255, 0, 255),
+    (0, 215, 255),
 ]
 
-color_map = {f"{color_id}": "red" for color_id, color in enumerate(colors)}
+color_map = {
+    f"{color_id}": f"#{hex(color[2])[2:].zfill(2)}{hex(color[1])[2:].zfill(2)}{hex(color[0])[2:].zfill(2)}" for color_id, color in enumerate(colors)
+}
 
 
 def is_overlapping(rect1, rect2):
@@ -82,6 +75,9 @@ def draw_entity_boxes_on_image(image, entities, show=False, save_path=None):
     if len(entities) == 0:
         return image
 
+    # Not to show too many bboxes
+    entities = entities[:len(color_map)]
+    
     new_image = image.copy()
     previous_bboxes = []
     # size of text
