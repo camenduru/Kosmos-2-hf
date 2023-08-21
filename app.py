@@ -10,14 +10,11 @@ from transformers import AutoProcessor, AutoModelForVision2Seq
 import cv2
 
 colors = [
-    (255, 0, 0),
     (0, 255, 0),
     (0, 0, 255),
-
     (255, 255, 0),
     (255, 0, 255),
     (0, 255, 255),
-    
     (114, 128, 250),
     (0, 165, 255),
     (0, 128, 0),
@@ -28,6 +25,7 @@ colors = [
     (226, 43, 138),
     (255, 0, 255),
     (0, 215, 255),
+    (255, 0, 0),    
 ]
 
 color_map = {
