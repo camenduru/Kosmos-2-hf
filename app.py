@@ -272,7 +272,7 @@ def main():
             if start > prev_start:
                 colored_text.append((processed_text[prev_start:start], None))
             colored_text.append((processed_text[start:end], f"{color_id}"))
-            prev_start = start
+            prev_start = end
 
         if end < len(processed_text):
             colored_text.append((processed_text[end:len(processed_text)], None))
