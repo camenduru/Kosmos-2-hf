@@ -167,7 +167,7 @@ def main():
 
     ckpt = "ydshieh/kosmos-2-patch14-224"
 
-    model = AutoModelForVision2Seq.from_pretrained(ckpt, trust_remote_code=True)
+    model = AutoModelForVision2Seq.from_pretrained(ckpt, trust_remote_code=True).to("cuda")
     processor = AutoProcessor.from_pretrained(ckpt, trust_remote_code=True)
 
     def generate_predictions(image_input, text_input, do_sample, sampling_topp, sampling_temperature):
@@ -189,11 +189,11 @@ def main():
         inputs = processor(text=text_input, images=image_input, return_tensors="pt")
 
         generated_ids = model.generate(
-            pixel_values=inputs["pixel_values"],
-            input_ids=inputs["input_ids"][:, :-1],
-            attention_mask=inputs["attention_mask"][:, :-1],
+            pixel_values=inputs["pixel_values"].to("cuda"),
+            input_ids=inputs["input_ids"][:, :-1].to("cuda"),
+            attention_mask=inputs["attention_mask"][:, :-1].to("cuda"),
             img_features=None,
-            img_attn_mask=inputs["img_attn_mask"][:, :-1],
+            img_attn_mask=inputs["img_attn_mask"][:, :-1].to("cuda"),
             use_cache=True,
             max_new_tokens=128,
         )
