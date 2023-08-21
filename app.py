@@ -170,7 +170,7 @@ def main():
     model = AutoModelForVision2Seq.from_pretrained(ckpt, trust_remote_code=True).to("cuda")
     processor = AutoProcessor.from_pretrained(ckpt, trust_remote_code=True)
 
-    def generate_predictions(image_input, text_input, do_sample, sampling_topp, sampling_temperature):
+    def generate_predictions(image_input, text_input):
 
         # Save the image and load it again to match the original Kosmos-2 demo.
         # (https://github.com/microsoft/unilm/blob/f4695ed0244a275201fff00bee495f76670fbe70/kosmos-2/demo/gradio_app.py#L345-L346)
@@ -252,10 +252,6 @@ def main():
             with gr.Column():
                 image_input = gr.Image(type="pil", label="Test Image")
                 text_input = gr.Radio(["Brief", "Detailed"], label="Description Type", value="Brief")
-                do_sample = gr.Checkbox(label="Enable Sampling", info="(Please enable it before adjusting sampling parameters below)", value=False)
-                with gr.Accordion("Sampling parameters", open=False) as sampling_parameters:
-                    sampling_topp = gr.Slider(minimum=0.1, maximum=1, step=0.01, value=0.9, label="Sampling: Top-P")
-                    sampling_temperature = gr.Slider(minimum=0.1, maximum=1, step=0.01, value=0.7, label="Sampling: Temperature")
 
                 run_button = gr.Button(label="Run", visible=True)
 
@@ -270,16 +266,16 @@ def main():
         with gr.Row():
             with gr.Column():
                 gr.Examples(examples=[
-                            ["images/two_dogs.jpg", "Detailed", False],
-                            ["images/snowman.png", "Brief", False],
-                            ["images/man_ball.png", "Detailed", False],
-                        ], inputs=[image_input, text_input, do_sample])
+                            ["images/two_dogs.jpg", "Detailed"],
+                            ["images/snowman.png", "Brief"],
+                            ["images/man_ball.png", "Detailed"],
+                        ], inputs=[image_input, text_input])
             with gr.Column():
                 gr.Examples(examples=[
-                            ["images/six_planes.png", "Brief", False],
-                            ["images/quadrocopter.jpg", "Brief", False],
-                            ["images/carnaby_street.jpg", "Brief", False],
-                        ], inputs=[image_input, text_input, do_sample])
+                            ["images/six_planes.png", "Brief"],
+                            ["images/quadrocopter.jpg", "Brief"],
+                            ["images/carnaby_street.jpg", "Brief"],
+                        ], inputs=[image_input, text_input])
         gr.Markdown(term_of_use)
 
         # record which text span (label) is selected
@@ -304,7 +300,7 @@ def main():
         selected.change(update_output_image, [image_input, image_output, entity_output, selected], [image_output])
 
         run_button.click(fn=generate_predictions,
-                         inputs=[image_input, text_input, do_sample, sampling_topp, sampling_temperature],
+                         inputs=[image_input, text_input],
                          outputs=[image_output, text_output1, entity_output],
                          show_progress=True, queue=True)
 
