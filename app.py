@@ -201,7 +201,7 @@ def main():
         # By default, the generated  text is cleanup and the entities are extracted.
         processed_text, entities = processor.post_processor_generation(generated_text)
 
-        annotated_image = draw_entity_boxes_on_image(image_input, entities, show=True)
+        annotated_image = draw_entity_boxes_on_image(image_input, entities, show=False)
 
         color_id = -1
         entity_info = []
