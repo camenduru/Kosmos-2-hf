@@ -137,7 +137,7 @@ def draw_entity_boxes_on_image(image, entities, show=False, save_path=None):
     new_image = image.copy()
     previous_bboxes = []
     # size of text
-    text_size = 2
+    text_size = 1
     # thickness of text
     text_line = 1  # int(max(1 * min(image_h, image_w) / 512, 1))
     box_line = 3
