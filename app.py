@@ -223,8 +223,9 @@ def main():
 
     def generate_predictions(image_input, text_input, do_sample, sampling_topp, sampling_temperature):
 
+        # Save the image and load it again to match the original Kosmos-2 demo.
+        # (https://github.com/microsoft/unilm/blob/f4695ed0244a275201fff00bee495f76670fbe70/kosmos-2/demo/gradio_app.py#L345-L346)
         user_image_path = "/tmp/user_input_test_image.jpg"
-        # This will be of `.jpg` format
         image_input.save(user_image_path)
         # This might give different results from the original argument `image_input`
         image_input = Image.open(user_image_path)
