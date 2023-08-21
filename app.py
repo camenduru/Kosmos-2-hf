@@ -8,6 +8,7 @@ import torchvision.transforms as T
 from PIL import Image
 from transformers import AutoProcessor, AutoModelForVision2Seq
 import cv2
+import ast
 
 colors = [
     (0, 255, 0),
@@ -39,7 +40,7 @@ def is_overlapping(rect1, rect2):
     return not (x2 < x3 or x1 > x4 or y2 < y3 or y1 > y4)
 
 
-def draw_entity_boxes_on_image(image, entities, show=False, save_path=None):
+def draw_entity_boxes_on_image(image, entities, show=False, save_path=None, entity_index=-1):
     """_summary_
     Args:
         image (_type_): image or image path
@@ -69,9 +70,13 @@ def draw_entity_boxes_on_image(image, entities, show=False, save_path=None):
         image = np.array(pil_img)[:, :, [2, 1, 0]]
     else:
         raise ValueError(f"invaild image format, {type(image)} for {image}")
-
+    
     if len(entities) == 0:
         return image
+
+    indices = list(range(len(entities)))
+    if entity_index >= 0:
+        indices = [entity_index]
 
     # Not to show too many bboxes
     entities = entities[:len(color_map)]
@@ -92,11 +97,13 @@ def draw_entity_boxes_on_image(image, entities, show=False, save_path=None):
     used_colors = colors  # random.sample(colors, k=num_bboxes)
 
     color_id = -1
-    for entity_name, (start, end), bboxes in entities:
+    for entity_idx, (entity_name, (start, end), bboxes) in enumerate(entities):
         color_id += 1
+        if entity_idx not in indices:
+            continue
         for bbox_id, (x1_norm, y1_norm, x2_norm, y2_norm) in enumerate(bboxes):
-            if start is None and bbox_id > 0:
-                color_id += 1
+            # if start is None and bbox_id > 0:
+            #     color_id += 1
             orig_x1, orig_y1, orig_x2, orig_y2 = int(x1_norm * image_w), int(y1_norm * image_h), int(x2_norm * image_w), int(y2_norm * image_h)
 
             # draw bbox
@@ -199,13 +206,17 @@ def main():
 
         color_id = -1
         entity_info = []
-        for entity_name, (start, end), bboxes in entities:
+        filtered_entities = []
+        for entity in entities:
+            entity_name, (start, end), bboxes = entity
+            if start is None:
+                continue
             color_id += 1
-            for bbox_id, _ in enumerate(bboxes):
-                if start is None and bbox_id > 0:
-                    color_id += 1
-            if start is not None:
-                entity_info.append(((start, end), color_id))
+            # for bbox_id, _ in enumerate(bboxes):
+                # if start is None and bbox_id > 0:
+                #     color_id += 1
+            entity_info.append(((start, end), color_id))
+            filtered_entities.append(entity)
 
         colored_text = []
         prev_start = 0
@@ -219,7 +230,7 @@ def main():
         if end < len(processed_text):
             colored_text.append((processed_text[end:len(processed_text)], None))
 
-        return annotated_image, colored_text
+        return annotated_image, colored_text, str(filtered_entities)
 
     term_of_use = """
     ### Terms of use  
@@ -271,12 +282,33 @@ def main():
                         ], inputs=[image_input, text_input, do_sample])
         gr.Markdown(term_of_use)
 
+        # record which text span (label) is selected
+        selected = gr.Number(-1, show_label=False, placeholder="Selected", visible=False)
+
+        # record the current `entities`
+        entity_output = gr.Textbox(visible=False)
+
+        # get the current selected span label
+        def get_text_span_label(evt: gr.SelectData):
+            if evt.value[-1] is None:
+                return -1
+            return int(evt.value[-1])
+        # and set this information to `selected`
+        text_output1.select(get_text_span_label, None, selected)
+        
+        # update output image when we change the span (enity) selection
+        def update_output_image(img_input, image_output, entities, idx):
+            entities = ast.literal_eval(entities)
+            updated_image = draw_entity_boxes_on_image(img_input, entities, entity_index=idx)
+            return updated_image
+        selected.change(update_output_image, [image_input, image_output, entity_output, selected], [image_output])
+
         run_button.click(fn=generate_predictions,
                          inputs=[image_input, text_input, do_sample, sampling_topp, sampling_temperature],
-                         outputs=[image_output, text_output1],
+                         outputs=[image_output, text_output1, entity_output],
                          show_progress=True, queue=True)
 
-    demo.launch()
+    demo.launch(share=True)
 
 
 if __name__ == "__main__":
