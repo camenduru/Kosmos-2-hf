@@ -200,7 +200,7 @@ def main():
         generated_text = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
 
         # By default, the generated  text is cleanup and the entities are extracted.
-        processed_text, entities = processor.post_processor_generation(generated_text)
+        processed_text, entities = processor.post_process_generation(generated_text)
 
         annotated_image = draw_entity_boxes_on_image(image_input, entities, show=False)
 
