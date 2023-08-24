@@ -209,7 +209,8 @@ def main():
         filtered_entities = []
         for entity in entities:
             entity_name, (start, end), bboxes = entity
-            if start is None:
+            if start == end:
+                # skip bounding bbox without a `phrase` associated
                 continue
             color_id += 1
             # for bbox_id, _ in enumerate(bboxes):
