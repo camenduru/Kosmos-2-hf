@@ -167,7 +167,7 @@ def main():
 
     ckpt = "ydshieh/kosmos-2-patch14-224"
 
-    model = AutoModelForVision2Seq.from_pretrained(ckpt, trust_remote_code=True).to("cuda")
+    model = AutoModelForVision2Seq.from_pretrained(ckpt, trust_remote_code=True, low_cpu_mem_usage=True).to("cuda")
     processor = AutoProcessor.from_pretrained(ckpt, trust_remote_code=True)
 
     def generate_predictions(image_input, text_input):
